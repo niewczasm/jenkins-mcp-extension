@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.Result;
 import hudson.model.Run;
 import io.jenkins.plugins.mcp.server.McpServerExtension;
 import io.jenkins.plugins.mcp.server.annotation.Tool;
@@ -133,10 +134,11 @@ public class PipelineStagesExtension implements McpServerExtension {
             leafInfos.add(toInfo(graph, s));
         }
 
+        Result buildResult = run.getResult();
         return new PipelineStagesResponse(
                 run.getParent().getFullName(),
                 run.getNumber(),
-                run.getResult() != null ? run.getResult().toString() : null,
+                buildResult != null ? buildResult.toString() : null,
                 run.isBuilding(),
                 all.size(),
                 leafInfos,
@@ -203,11 +205,15 @@ public class PipelineStagesExtension implements McpServerExtension {
         LogCollector collector = new LogCollector(run.getCharset(), limit, tail, regex);
         boolean stopped = false;
         for (FlowNode n : nodes) {
+            LogAction logAction = n.getAction(LogAction.class);
+            if (logAction == null) {
+                continue;
+            }
             StageGraph.Stage owner = graph.stageOf(n);
             String where = owner != null ? "  (" + graph.path(owner) + ")" : "";
             collector.beginStep("===== [step " + n.getId() + "] " + StageGraph.describeStep(n) + where + " =====");
             try {
-                AnnotatedLargeText<? extends FlowNode> text = n.getAction(LogAction.class).getLogText();
+                AnnotatedLargeText<? extends FlowNode> text = logAction.getLogText();
                 text.writeLogTo(0, collector);
                 collector.forceEol();
             } catch (LogCollector.StopReading e) {
