@@ -294,7 +294,8 @@ final class StageGraph {
         if (origin != null) {
             WarningAction w = origin.getPersistentAction(WarningAction.class);
             if (w != null) {
-                return w.getResult() + (w.getMessage() != null ? ": " + w.getMessage() : "");
+                String warning = w.getMessage();
+                return w.getResult() + (warning != null ? ": " + warning : "");
             }
         }
         return null;
