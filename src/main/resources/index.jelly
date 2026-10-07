@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<div>
+  Adds read-only Pipeline stage tools (getPipelineStages, getStageLog) to the MCP Server plugin,
+  so MCP clients can find the failing stage or parallel branch and read only its log.
+</div>
