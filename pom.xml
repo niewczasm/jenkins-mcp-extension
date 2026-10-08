@@ -13,7 +13,7 @@
   <!-- Rename groupId/package to your organisation before building. -->
   <groupId>com.example.jenkins</groupId>
   <artifactId>mcp-pipeline-stages</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>MCP Pipeline Stages</name>
