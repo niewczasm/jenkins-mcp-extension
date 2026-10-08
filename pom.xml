@@ -17,7 +17,7 @@
   <packaging>hpi</packaging>
 
   <name>MCP Pipeline Stages</name>
-  <description>Adds read-only Pipeline stage tools (getPipelineStages, getStageLog) to the Jenkins MCP Server plugin.</description>
+  <description>Adds read-only Pipeline stage and test-result tools (getPipelineStages, getStageLog, getFailedTestsSummary, getTestCaseDetails) to the Jenkins MCP Server plugin.</description>
 
   <properties>
     <jenkins.baseline>2.541</jenkins.baseline>
@@ -56,6 +56,16 @@
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-step-api</artifactId>
     </dependency>
+    <!-- Test-result tools load only when the JUnit plugin is installed (same approach as mcp-server). -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>variant</artifactId>
+    </dependency>
 
     <!-- test -->
     <dependency>
@@ -71,6 +81,11 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-stage-step</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-durable-task-step</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
