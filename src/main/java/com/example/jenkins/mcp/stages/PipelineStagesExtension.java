@@ -3,10 +3,7 @@ package com.example.jenkins.mcp.stages;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.console.AnnotatedLargeText;
-import hudson.model.Item;
-import hudson.model.Job;
 import hudson.model.Result;
-import hudson.model.Run;
 import io.jenkins.plugins.mcp.server.McpServerExtension;
 import io.jenkins.plugins.mcp.server.annotation.Tool;
 import io.jenkins.plugins.mcp.server.annotation.ToolParam;
@@ -17,7 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -91,7 +87,7 @@ public class PipelineStagesExtension implements McpServerExtension {
                                     + " SKIPPED. Recommended for pipelines with many parallel branches.",
                             required = false)
                     Boolean onlyProblems) {
-        WorkflowRun run = resolveRun(jobFullName, buildNumber);
+        WorkflowRun run = JenkinsLookup.resolveWorkflowRun(jobFullName, buildNumber);
         StageGraph graph = new StageGraph(run);
 
         List<StageGraph.Stage> visible = graph.visibleStages();
@@ -175,7 +171,7 @@ public class PipelineStagesExtension implements McpServerExtension {
         if (stage == null || stage.isBlank()) {
             throw new IllegalArgumentException("'stage' is required: pass an id from getPipelineStages or a stage name");
         }
-        WorkflowRun run = resolveRun(jobFullName, buildNumber);
+        WorkflowRun run = JenkinsLookup.resolveWorkflowRun(jobFullName, buildNumber);
         StageGraph graph = new StageGraph(run);
         FlowNode target = resolveTarget(graph, stage.trim());
 
@@ -264,27 +260,6 @@ public class PipelineStagesExtension implements McpServerExtension {
     }
 
     // ------------------------------------------------------------------ helpers
-
-    private static WorkflowRun resolveRun(String jobFullName, Integer buildNumber) {
-        if (jobFullName == null || jobFullName.isBlank()) {
-            throw new IllegalArgumentException("jobFullName is required");
-        }
-        // getItemByFullName returns null when the caller lacks Item.READ, so no data leaks for hidden jobs.
-        Job<?, ?> job = Jenkins.get().getItemByFullName(jobFullName, Job.class);
-        if (job == null) {
-            throw new IllegalArgumentException("Job not found (or no permission): " + jobFullName);
-        }
-        job.checkPermission(Item.READ);
-        Run<?, ?> run = buildNumber == null || buildNumber <= 0 ? job.getLastBuild() : job.getBuildByNumber(buildNumber);
-        if (run == null) {
-            throw new IllegalArgumentException("Build not found: " + jobFullName + " #" + buildNumber);
-        }
-        if (!(run instanceof WorkflowRun wr)) {
-            throw new IllegalArgumentException(
-                    jobFullName + " is not a Pipeline job; use getBuildLog / searchBuildLog instead");
-        }
-        return wr;
-    }
 
     private static FlowNode resolveTarget(StageGraph graph, String stage) {
         FlowNode byId = graph.byId.get(stage);
